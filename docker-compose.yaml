@@ -1,0 +1,85 @@
+name: andromeda
+services:
+  homarr:
+    container_name: homarr
+    image: ghcr.io/ajnart/homarr:latest
+    hostname: home.andromeda.local
+    ports:
+      - "7575:7575"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - homarr_config:/app/data/configs
+      - homarr_icons:/app/public/icons
+      - homarr_data:/data
+    restart: always
+
+  redis_cache:
+    container_name: redis-cache
+    image: redis:alpine
+    hostname: cache.redis.andromeda.local
+    ports:
+      - "6379:6379"
+    restart: always
+
+  redis_persistent:
+    container_name: redis-persistent
+    image: redis:alpine
+    hostname: persistent.redis.andromeda.local
+    ports:
+      - "6380:6379"
+    restart: always
+
+  redis_insight:
+    container_name: redis-insight
+    image: redislabs/redisinsight:latest
+    hostname: redis.andromeda.local
+    ports:
+      - "5540:5540"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5540/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - redis_insight:/data
+    restart: always
+  
+  postgresql:
+    container_name: postgresql
+    image: postgres:latest
+    hostname: postgresql.andromeda.local
+    ports:
+      - "5432:5432"
+    restart: always
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    hostname: pgadmin.andromeda.local
+    restart: always
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    hostname: mongodb.andromeda.local
+    ports:
+      - "27017:27017"
+    restart: always
+
+  mongo_express:
+    container_name: mongodb-express
+    image: mongo-express:latest
+    hostname: express.mongodb.andromeda.local
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    ports:
+      - "8081:8081"
+    restart: always
+
+  kubernetes_dashboard:
+    container_name: kubernetes_dashboard
+    image: kubernetesui/dashboard:latest
+    hostname: k8s.andromeda.local
+    ports:
+      - "8000:8000"
+    restart: always
